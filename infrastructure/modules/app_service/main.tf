@@ -12,6 +12,16 @@ resource "aws_ecs_task_definition" "app" {
       name  = "web-app",
       image = var.image,
       essential = true,
+      environment = [
+        {
+          name  = "SNS_TOPIC_ARN"
+          value = var.sns_topic_arn
+        },
+        {
+          name  = "AWS_REGION"
+          value = var.region
+        }
+      ]
       portMappings = [{
         containerPort = 80
         hostPort      = 80

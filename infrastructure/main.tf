@@ -19,7 +19,7 @@ module "app_service" {
   source = "./modules/app_service"
 
   task_family         = "hotel-app"
-  image               = "nginx" # Or a placeholder Python image
+  image               = module.ecr.repository_url
   cpu                 = "256"
   memory              = "512"
   execution_role_arn  = module.iam.execution_role_arn
@@ -31,6 +31,7 @@ module "app_service" {
   log_group_name      = "/ecs/hotel-app"
   region              = var.region
   target_group_arn = module.alb.target_group_arn
+  sns_topic_arn = module.sns.topic_arn
 }
 
 module "alb" {
@@ -52,4 +53,9 @@ module "sqs_payment" {
 
   queue_name = "hotel-payment-queue"
   topic_arn  = module.sns.topic_arn
+}
+
+module "ecr" {
+  source = "./modules/ecr"
+  name   = "hotel-app"
 }

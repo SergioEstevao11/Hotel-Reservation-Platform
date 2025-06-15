@@ -15,3 +15,7 @@ variable "log_group_name" {}
 variable "region" {}
 
 variable "target_group_arn" {}
+variable "sns_topic_arn" {
+  description = "ARN of the SNS topic for the app to publish to"
+  type        = string
+}
