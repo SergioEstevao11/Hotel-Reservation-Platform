@@ -29,4 +29,14 @@ module "app_service" {
   service_name        = "hotel-reservation-service"
   log_group_name      = "/ecs/hotel-app"
   region              = var.region
+  target_group_arn = module.alb.target_group_arn
+}
+
+module "alb" {
+  source = "./modules/alb"
+  name   = "hotel-app-alb"
+
+  subnet_ids         = module.vpc.public_subnet_ids
+  vpc_id             = module.vpc.vpc_id
+  security_group_id  = module.vpc.app_sg_id
 }

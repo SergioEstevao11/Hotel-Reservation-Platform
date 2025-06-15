@@ -13,3 +13,5 @@ variable "security_group_id" {}
 variable "service_name" {}
 variable "log_group_name" {}
 variable "region" {}
+
+variable "target_group_arn" {}

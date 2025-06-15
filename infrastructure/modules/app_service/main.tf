@@ -42,5 +42,11 @@ resource "aws_ecs_service" "app" {
     assign_public_ip = true
   }
 
+  load_balancer {
+    target_group_arn = var.target_group_arn
+    container_name   = "web-app"
+    container_port   = 80
+  }
+
   depends_on = [aws_ecs_task_definition.app]
 }
