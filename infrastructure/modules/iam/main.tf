@@ -50,3 +50,21 @@ resource "aws_iam_role_policy_attachment" "task_policy_attachment" {
   role       = aws_iam_role.ecs_task.name
   policy_arn = aws_iam_policy.sns_publish_policy.arn
 }
+
+
+resource "aws_iam_policy" "sns_publish" {
+  name = "publish-to-booking-topic"
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [{
+      Effect   = "Allow",
+      Action   = "sns:Publish",
+      Resource = var.sns_topic_arn
+    }]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "task_attach_sns_publish" {
+  role       = aws_iam_role.ecs_task.name
+  policy_arn = aws_iam_policy.sns_publish.arn
+}
