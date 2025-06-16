@@ -48,10 +48,20 @@ module "sns" {
   topic_name = "hotel-booking-events"
 }
 
-module "sqs_payment" {
-  source     = "./modules/sqs"
+locals {
+  queues = {
+    payment     = "hotel-payment-queue"
+    email       = "hotel-email-queue"
+    fulfillment = "hotel-fulfillment-queue"
+    analytics   = "hotel-analytics-queue"
+  }
+}
 
-  queue_name = "hotel-payment-queue"
+module "sqs_queues" {
+  source     = "./modules/sqs"
+  for_each   = local.queues
+
+  queue_name = each.value
   topic_arn  = module.sns.topic_arn
 }
 
