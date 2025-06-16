@@ -6,7 +6,7 @@ sns_topic_arn = os.environ.get("SNS_TOPIC_ARN")
 sns = boto3.client("sns", region_name=os.environ.get("AWS_REGION", "eu-west-1"))
 
 def handler():
-    print("Sending message to SNS...")
+    print("Reservation Received! Sending message to SNS...")
     sns.publish(
         TopicArn=sns_topic_arn,
         Message="Booking event: room reserved",

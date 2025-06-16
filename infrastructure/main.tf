@@ -69,3 +69,35 @@ module "ecr" {
   source = "./modules/ecr"
   name   = "hotel-app"
 }
+
+locals {
+  lambda_consumers = {
+    email = {
+      handler_file = "email_handler.handler"
+      zip_path     = "../lambdas/email_handler.zip"
+    }
+    payment = {
+      handler_file = "payment_handler.handler"
+      zip_path     = "../lambdas/payment_handler.zip"
+    }
+    fulfillment = {
+      handler_file = "fulfillment_handler.handler"
+      zip_path     = "../lambdas/fulfillment_handler.zip"
+    }
+    analytics = {
+      handler_file = "analytics_handler.handler"
+      zip_path     = "../lambdas/analytics_handler.zip"
+    }
+  }
+}
+
+module "lambda_consumers" {
+  source           = "./modules/lambda_consumer"
+  for_each         = local.lambda_consumers
+
+  name             = each.key
+  queue_arn        = module.sqs_queues[each.key].queue_arn
+  queue_name       = module.sqs_queues[each.key].queue_name
+  lambda_zip_path  = each.value.zip_path
+  handler          = each.value.handler_file
+}
