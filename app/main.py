@@ -1,19 +1,33 @@
-import boto3
-import os
-import time
+import boto3, os, json
+from uuid import uuid4
+from fastapi import FastAPI, Request
 
-sns_topic_arn = os.environ.get("SNS_TOPIC_ARN")
-sns = boto3.client("sns", region_name=os.environ.get("AWS_REGION", "eu-west-1"))
+app = FastAPI()
+dynamodb = boto3.resource("dynamodb")
+sns = boto3.client("sns")
 
-def handler():
-    print("Reservation Received! Sending message to SNS...")
+table = dynamodb.Table(os.environ["DDB_TABLE_NAME"])
+
+@app.post("/reserve")
+async def reserve(req: Request):
+    body = await req.json()
+    reservation_id = str(uuid4())
+    item = {
+        "user_id": body["user_id"],
+        "reservation_id": reservation_id,
+        "hotel_name": body["hotel"],
+        "check_in": body["check_in"],
+        "check_out": body["check_out"],
+        "status": "pending",
+        "fulfilled": False,
+        "paid": False
+    }
+    table.put_item(Item=item)
+
     sns.publish(
-        TopicArn=sns_topic_arn,
-        Message="Booking event: room reserved",
-        Subject="New Booking"
+        TopicArn=os.environ["SNS_TOPIC_ARN"],
+        Message=json.dumps(item),
+        Subject="ReservationCreated"
     )
-    print("Message sent.")
 
-if __name__ == "__main__":
-    time.sleep(2)
-    handler()
+    return {"reservation_id": reservation_id}
