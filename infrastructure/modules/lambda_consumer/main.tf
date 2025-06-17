@@ -7,9 +7,12 @@ resource "aws_lambda_function" "this" {
   source_code_hash = filebase64sha256(var.lambda_zip_path)
 
   environment {
-    variables = {
-      QUEUE_NAME = var.queue_name
-    }
+    variables = merge(
+      {
+        QUEUE_NAME = var.queue_name
+      },
+      var.environment
+    )
   }
 }
 
@@ -55,4 +58,10 @@ resource "aws_iam_role_policy" "sqs_access" {
       Resource = var.queue_arn
     }]
   })
+}
+
+resource "aws_iam_role_policy_attachment" "custom" {
+  for_each   = var.policy_arns
+  role       = aws_iam_role.lambda_exec.name
+  policy_arn = each.value
 }

@@ -19,3 +19,4 @@ variable "sns_topic_arn" {
   description = "ARN of the SNS topic for the app to publish to"
   type        = string
 }
+variable "dynamodb_reservations_table_name" {}

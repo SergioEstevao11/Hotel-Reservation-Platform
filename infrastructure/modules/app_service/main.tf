@@ -20,7 +20,11 @@ resource "aws_ecs_task_definition" "app" {
         {
           name  = "AWS_REGION"
           value = var.region
-        }
+        },
+        {
+          name  = "DDB_TABLE_NAME"
+          value = var.dynamodb_reservations_table_name
+        },
       ]
       portMappings = [{
         containerPort = 80

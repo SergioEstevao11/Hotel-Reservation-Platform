@@ -68,3 +68,27 @@ resource "aws_iam_role_policy_attachment" "task_attach_sns_publish" {
   role       = aws_iam_role.ecs_task.name
   policy_arn = aws_iam_policy.sns_publish.arn
 }
+
+resource "aws_iam_policy" "dynamodb_access" {
+  name = "HotelDynamoDBAccess"
+
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [{
+      Effect = "Allow",
+      Action = [
+        "dynamodb:PutItem",
+        "dynamodb:GetItem",
+        #"dynamodb:Query",
+        "dynamodb:UpdateItem",
+        #"dynamodb:DeleteItem"
+      ],
+      Resource = var.dynamodb_reservations_arn
+    }]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "ecs_dynamodb" {
+  role       = aws_iam_role.ecs_task.name
+  policy_arn = aws_iam_policy.dynamodb_access.arn
+}

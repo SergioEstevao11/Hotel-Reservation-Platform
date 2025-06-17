@@ -8,6 +8,7 @@ module "vpc" {
 module "iam" {
   source = "./modules/iam"
   sns_topic_arn  = module.sns.topic_arn
+  dynamodb_reservations_arn = module.dynamodb_reservations.table_arn
 }
 
 module "ecs_cluster" {
@@ -32,6 +33,7 @@ module "app_service" {
   region              = var.region
   target_group_arn = module.alb.target_group_arn
   sns_topic_arn = module.sns.topic_arn
+  dynamodb_reservations_table_name = module.dynamodb_reservations.table_name
 }
 
 module "alb" {
@@ -100,4 +102,15 @@ module "lambda_consumers" {
   queue_name       = module.sqs_queues[each.key].queue_name
   lambda_zip_path  = each.value.zip_path
   handler          = each.value.handler_file
+  environment = {
+    DDB_TABLE_NAME = module.dynamodb_reservations.table_name
+  }
+  policy_arns = {
+    dynamodb = module.iam.dynamodb_access_policy_arn
+  }
+}
+
+module "dynamodb_reservations" {
+  source     = "./modules/dynamodb_reservations"
+  table_name = "hotel-reservations"
 }
