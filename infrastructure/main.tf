@@ -32,7 +32,7 @@ module "alb" {
 
   subnet_ids        = module.vpc.public_subnet_ids
   vpc_id            = module.vpc.vpc_id
-  security_group_id = module.vpc.app_sg_id
+  security_group_id = module.vpc.alb_sg_id
 }
 
 module "ecr" {
@@ -49,7 +49,7 @@ module "app_service" {
   execution_role_arn    = module.iam.execution_role_arn
   task_role_arn         = module.iam.task_role_arn
   cluster_arn           = module.ecs_cluster.cluster_arn
-  subnet_ids            = module.vpc.public_subnet_ids
+  subnet_ids            = module.vpc.private_subnet_ids
   security_group_id     = module.vpc.app_sg_id
   service_name          = "hotel-reservation-service"
   log_group_name        = "/ecs/hotel-app"
