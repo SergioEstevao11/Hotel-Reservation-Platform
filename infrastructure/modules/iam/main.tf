@@ -1,67 +1,62 @@
-resource "aws_iam_role" "ecs_execution" {
-  name = "ecs-execution-role"
 
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17",
-    Statement = [{
-      Effect = "Allow",
-      Principal = {
-        Service = "ecs-tasks.amazonaws.com"
-      },
-      Action = "sts:AssumeRole"
-    }]
-  })
+###########################
+# IAM Roles
+###########################
+
+data "aws_iam_policy_document" "ecs_execution_assume_role" {
+  statement {
+    actions = ["sts:AssumeRole"]
+    principals {
+      type        = "Service"
+      identifiers = ["ecs-tasks.amazonaws.com"]
+    }
+  }
 }
+
+resource "aws_iam_role" "ecs_execution" {
+  name               = "ecs-execution-role"
+  assume_role_policy = data.aws_iam_policy_document.ecs_execution_assume_role.json
+}
+
+data "aws_iam_policy_document" "ecs_task_assume_role" {
+  statement {
+    actions = ["sts:AssumeRole"]
+    principals {
+      type        = "Service"
+      identifiers = ["ecs-tasks.amazonaws.com"]
+    }
+  }
+}
+
+resource "aws_iam_role" "ecs_task" {
+  name               = "ecs-task-role"
+  assume_role_policy = data.aws_iam_policy_document.ecs_task_assume_role.json
+}
+
+###########################
+# Attach AWS Managed Policy
+###########################
 
 resource "aws_iam_role_policy_attachment" "execution_logs_policy" {
   role       = aws_iam_role.ecs_execution.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
 }
 
+###########################
+# SNS Publish Policy
+###########################
 
-resource "aws_iam_role" "ecs_task" {
-  name = "ecs-task-role"
-
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17",
-    Statement = [{
-      Effect = "Allow",
-      Principal = {
-        Service = "ecs-tasks.amazonaws.com"
-      },
-      Action = "sts:AssumeRole"
-    }]
-  })
+data "aws_iam_policy_document" "sns_publish" {
+  statement {
+    actions   = ["sns:Publish"]
+    resources = [var.sns_topic_arn]
+    effect    = "Allow"
+  }
 }
-
-resource "aws_iam_policy" "sns_publish_policy" {
-  name   = "publish-to-sns"
-  policy = jsonencode({
-    Version = "2012-10-17",
-    Statement = [{
-      Effect   = "Allow",
-      Action   = "sns:Publish",
-      Resource = "*"  # Optionally restrict to your topic ARN
-    }]
-  })
-}
-
-resource "aws_iam_role_policy_attachment" "task_policy_attachment" {
-  role       = aws_iam_role.ecs_task.name
-  policy_arn = aws_iam_policy.sns_publish_policy.arn
-}
-
 
 resource "aws_iam_policy" "sns_publish" {
-  name = "publish-to-booking-topic"
-  policy = jsonencode({
-    Version = "2012-10-17",
-    Statement = [{
-      Effect   = "Allow",
-      Action   = "sns:Publish",
-      Resource = var.sns_topic_arn
-    }]
-  })
+  name   = "sns-publish-policy"
+  policy = data.aws_iam_policy_document.sns_publish.json
 }
 
 resource "aws_iam_role_policy_attachment" "task_attach_sns_publish" {
@@ -69,23 +64,25 @@ resource "aws_iam_role_policy_attachment" "task_attach_sns_publish" {
   policy_arn = aws_iam_policy.sns_publish.arn
 }
 
-resource "aws_iam_policy" "dynamodb_access" {
-  name = "HotelDynamoDBAccess"
+###########################
+# DynamoDB Access Policy
+###########################
 
-  policy = jsonencode({
-    Version = "2012-10-17",
-    Statement = [{
-      Effect = "Allow",
-      Action = [
-        "dynamodb:PutItem",
-        "dynamodb:GetItem",
-        #"dynamodb:Query",
-        "dynamodb:UpdateItem",
-        #"dynamodb:DeleteItem"
-      ],
-      Resource = var.dynamodb_reservations_arn
-    }]
-  })
+data "aws_iam_policy_document" "dynamodb_access" {
+  statement {
+    actions = [
+      "dynamodb:PutItem",
+      "dynamodb:GetItem",
+      "dynamodb:UpdateItem"
+    ]
+    resources = [var.dynamodb_reservations_arn]
+    effect    = "Allow"
+  }
+}
+
+resource "aws_iam_policy" "dynamodb_access" {
+  name   = "dynamodb-access"
+  policy = data.aws_iam_policy_document.dynamodb_access.json
 }
 
 resource "aws_iam_role_policy_attachment" "ecs_dynamodb" {

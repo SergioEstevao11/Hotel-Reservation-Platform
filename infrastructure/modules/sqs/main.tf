@@ -1,6 +1,10 @@
 resource "aws_sqs_queue" "main" {
   name = var.queue_name
   kms_master_key_id = "alias/aws/sqs"
+  redrive_policy = jsonencode({
+    deadLetterTargetArn = aws_sqs_queue.dlq.arn
+    maxReceiveCount     = 5
+  })
 }
 
 resource "aws_sqs_queue" "dlq" {
@@ -13,10 +17,13 @@ resource "aws_sqs_queue_policy" "sns_policy" {
   policy = jsonencode({
     Version = "2012-10-17",
     Statement = [{
-      Effect = "Allow",
-      Principal = "*",
-      Action   = "sqs:SendMessage",
-      Resource = aws_sqs_queue.main.arn,
+      Sid    = "Allow-SNS-SendMessage"
+      Effect = "Allow"
+      Principal = {
+        Service = "sns.amazonaws.com"
+      }
+      Action   = "sqs:SendMessage"
+      Resource = aws_sqs_queue.main.arn
       Condition = {
         ArnEquals = {
           "aws:SourceArn" = var.topic_arn
