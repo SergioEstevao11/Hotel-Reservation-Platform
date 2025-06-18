@@ -3,6 +3,7 @@ module "vpc" {
 
   cidr_block           = "10.0.0.0/16"
   availability_zones   = ["eu-west-1a", "eu-west-1b"]
+  region               = var.region
 }
 
 module "sns" {
@@ -18,7 +19,7 @@ module "dynamodb_reservations" {
 module "iam" {
   source                     = "./modules/iam"
   sns_topic_arn              = module.sns.topic_arn
-  dynamodb_reservations_arn = module.dynamodb_reservations.table_arn
+  dynamodb_reservations_arn  = module.dynamodb_reservations.table_arn
 }
 
 module "ecs_cluster" {

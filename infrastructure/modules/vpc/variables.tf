@@ -7,3 +7,5 @@ variable "availability_zones" {
   description = "AZs for the subnets"
   type        = list(string)
 }
+
+variable "region" {}
