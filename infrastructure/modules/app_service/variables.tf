@@ -20,3 +20,5 @@ variable "sns_topic_arn" {
   type        = string
 }
 variable "dynamodb_reservations_table_name" {}
+variable "desired_count" {}
+variable "assign_public_ip" {}

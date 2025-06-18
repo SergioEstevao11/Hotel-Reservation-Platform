@@ -9,9 +9,10 @@ resource "aws_ecs_task_definition" "app" {
 
   container_definitions = jsonencode([
     {
-      name  = "web-app",
-      image = var.image,
-      essential = true,
+      name      = "web-app"
+      image     = var.image
+      essential = true
+
       environment = [
         {
           name  = "SNS_TOPIC_ARN"
@@ -24,18 +25,22 @@ resource "aws_ecs_task_definition" "app" {
         {
           name  = "DDB_TABLE_NAME"
           value = var.dynamodb_reservations_table_name
-        },
+        }
       ]
-      portMappings = [{
-        containerPort = 80
-        hostPort      = 80
-        protocol      = "tcp"
-      }],
+
+      portMappings = [
+        {
+          containerPort = 80
+          hostPort      = 80
+          protocol      = "tcp"
+        }
+      ]
+
       logConfiguration = {
-        logDriver = "awslogs",
+        logDriver = "awslogs"
         options = {
-          awslogs-group         = var.log_group_name,
-          awslogs-region        = var.region,
+          awslogs-group         = var.log_group_name
+          awslogs-region        = var.region
           awslogs-stream-prefix = "ecs"
         }
       }
@@ -48,12 +53,12 @@ resource "aws_ecs_service" "app" {
   cluster         = var.cluster_arn
   task_definition = aws_ecs_task_definition.app.arn
   launch_type     = "FARGATE"
-  desired_count   = 1
+  desired_count   = var.desired_count
 
   network_configuration {
-    subnets         = var.subnet_ids
-    security_groups = [var.security_group_id]
-    assign_public_ip = true
+    subnets          = var.subnet_ids
+    security_groups  = [var.security_group_id]
+    assign_public_ip = var.assign_public_ip
   }
 
   load_balancer {
@@ -61,6 +66,10 @@ resource "aws_ecs_service" "app" {
     container_name   = "web-app"
     container_port   = 80
   }
+
+  enable_execute_command            = true
+  propagate_tags                    = "SERVICE"
+  health_check_grace_period_seconds = 60
 
   depends_on = [aws_ecs_task_definition.app]
 }

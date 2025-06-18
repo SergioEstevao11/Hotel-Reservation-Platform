@@ -3,8 +3,8 @@ FROM python:3.11-slim
 WORKDIR /app
 RUN apt-get update && apt-get install -y gcc && rm -rf /var/lib/apt/lists/*
 
-COPY ../app/requirements.txt .
+COPY ../requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY ../app/main.py .
+COPY ../main.py .
 CMD ["python", "main.py"]

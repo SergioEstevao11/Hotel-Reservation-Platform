@@ -53,6 +53,8 @@ module "app_service" {
   security_group_id     = module.vpc.app_sg_id
   service_name          = "hotel-reservation-service"
   log_group_name        = "/ecs/hotel-app"
+  desired_count         = 2
+  assign_public_ip      = false
   region                = var.region
   target_group_arn      = module.alb.target_group_arn
   sns_topic_arn         = module.sns.topic_arn
