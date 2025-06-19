@@ -66,7 +66,7 @@ locals {
   queues = {
     payment     = "hotel-payment-queue"
     email       = "hotel-email-queue"
-    fulfillment = "hotel-fulfillment-queue"
+    updater     = "hotel-update-queue"
     analytics   = "hotel-analytics-queue"
   }
 
@@ -81,10 +81,10 @@ locals {
       zip_path     = "../lambdas/payment_handler.zip"
       policy_arns  = [module.iam.dynamodb_access_policy_arn]
     }
-    fulfillment = {
-      handler_file = "fulfillment_handler.handler"
-      zip_path     = "../lambdas/fulfillment_handler.zip"
-      policy_arns  = []
+    update = {
+      handler_file = "update_handler.handler"
+      zip_path     = "../lambdas/update_handler.zip"
+      policy_arns  = [module.iam.dynamodb_access_policy_arn]
     }
     analytics = {
       handler_file = "analytics_handler.handler"

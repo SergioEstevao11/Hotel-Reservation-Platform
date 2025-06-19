@@ -19,7 +19,6 @@ async def reserve(req: Request):
         "check_in": body["check_in"],
         "check_out": body["check_out"],
         "status": "pending",
-        "fulfilled": False,
         "paid": False
     }
     table.put_item(Item=item)
