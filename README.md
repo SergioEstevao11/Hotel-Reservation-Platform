@@ -59,6 +59,7 @@ terraform plan
     ```
 - Generate the lambda zip files
     ```bash
+  cd lambdas
   for f in *_handler.py; do zip "${f%.py}.zip" "$f"; done
     ```
 5. Initiate the project
