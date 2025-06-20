@@ -8,6 +8,10 @@ sns = boto3.client("sns")
 
 table = dynamodb.Table(os.environ["DDB_TABLE_NAME"])
 
+@app.get("/")
+def health_check():
+    return {"status": "healthy"}
+
 @app.post("/reserve")
 async def reserve(req: Request):
     body = await req.json()
@@ -23,10 +27,13 @@ async def reserve(req: Request):
     }
     table.put_item(Item=item)
 
-    sns.publish(
-        TopicArn=os.environ["SNS_TOPIC_ARN"],
-        Message=json.dumps(item),
-        Subject="ReservationCreated"
-    )
+    try:
+        response = sns.publish(
+            TopicArn=os.environ["SNS_TOPIC_ARN"],
+            Message=json.dumps(item),
+            Subject="ReservationCreated"
+        )
+    except Exception as e:
+        print(f"Failed to publish to SNS: {e}")
 
     return {"reservation_id": reservation_id}

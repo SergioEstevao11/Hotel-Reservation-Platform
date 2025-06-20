@@ -81,6 +81,19 @@ resource "aws_vpc_endpoint" "dynamodb" {
   }
 }
 
+resource "aws_vpc_endpoint" "sns" {
+  vpc_id              = aws_vpc.main.id
+  service_name        = "com.amazonaws.${var.region}.sns"
+  vpc_endpoint_type   = "Interface"
+  subnet_ids          = aws_subnet.private[*].id
+  security_group_ids  = [aws_security_group.vpc_endpoint_sg.id]
+  private_dns_enabled = true
+
+  tags = {
+    Name = "sns-endpoint"
+  }
+}
+
 # Security Group for App (Fargate)
 resource "aws_security_group" "app_sg" {
   name        = "app-sg"
@@ -119,5 +132,85 @@ resource "aws_security_group" "alb_sg" {
     to_port     = 0
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
+# Security group for VPC interface endpoints (ECR & Logs)
+resource "aws_security_group" "vpc_endpoint_sg" {
+  name        = "vpc-endpoint-sg"
+  description = "Allow HTTPS for interface endpoints"
+  vpc_id      = aws_vpc.main.id
+
+  ingress {
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = [var.cidr_block]  # e.g., "10.0.0.0/16"
+  }
+
+  // Egress: Allow HTTPS to anywhere
+  egress {
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name = "vpc-endpoint-sg"
+  }
+}
+
+# ECR API endpoint
+resource "aws_vpc_endpoint" "ecr_api" {
+  vpc_id              = aws_vpc.main.id
+  service_name        = "com.amazonaws.${var.region}.ecr.api"
+  vpc_endpoint_type   = "Interface"
+  subnet_ids          = aws_subnet.private[*].id
+  security_group_ids  = [aws_security_group.vpc_endpoint_sg.id]
+  private_dns_enabled = true
+
+  tags = {
+    Name = "ecr-api-endpoint"
+  }
+}
+
+# ECR DKR endpoint (actual Docker pull)
+resource "aws_vpc_endpoint" "ecr_dkr" {
+  vpc_id              = aws_vpc.main.id
+  service_name        = "com.amazonaws.${var.region}.ecr.dkr"
+  vpc_endpoint_type   = "Interface"
+  subnet_ids          = aws_subnet.private[*].id
+  security_group_ids  = [aws_security_group.vpc_endpoint_sg.id]
+  private_dns_enabled = true
+
+  tags = {
+    Name = "ecr-dkr-endpoint"
+  }
+}
+
+# Gateway VPC Endpoint for S3
+resource "aws_vpc_endpoint" "s3" {
+  vpc_id            = aws_vpc.main.id
+  service_name      = "com.amazonaws.${var.region}.s3"
+  vpc_endpoint_type = "Gateway"
+  route_table_ids   = [for rt in aws_route_table.private : rt.id]
+
+  tags = {
+    Name = "s3-endpoint"
+  }
+}
+
+# Optional CloudWatch Logs endpoint (for ECS logs)
+resource "aws_vpc_endpoint" "logs" {
+  vpc_id              = aws_vpc.main.id
+  service_name        = "com.amazonaws.${var.region}.logs"
+  vpc_endpoint_type   = "Interface"
+  subnet_ids          = aws_subnet.private[*].id
+  security_group_ids  = [aws_security_group.vpc_endpoint_sg.id]
+  private_dns_enabled = true
+
+  tags = {
+    Name = "logs-endpoint"
   }
 }

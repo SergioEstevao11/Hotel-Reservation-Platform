@@ -43,6 +43,34 @@ resource "aws_iam_role_policy_attachment" "execution_logs_policy" {
 }
 
 ###########################
+# S3 Read-Only Access to All Buckets for ECS Execution Role
+###########################
+
+data "aws_iam_policy_document" "s3_read_access" {
+  statement {
+    actions = [
+      "s3:GetObject",
+      "s3:ListBucket"
+    ]
+    resources = [
+      "arn:aws:s3:::*",
+      "arn:aws:s3:::*/*"
+    ]
+    effect = "Allow"
+  }
+}
+
+resource "aws_iam_policy" "s3_read_access" {
+  name   = "ecs-execution-s3-read"
+  policy = data.aws_iam_policy_document.s3_read_access.json
+}
+
+resource "aws_iam_role_policy_attachment" "execution_attach_s3_read" {
+  role       = aws_iam_role.ecs_execution.name
+  policy_arn = aws_iam_policy.s3_read_access.arn
+}
+
+###########################
 # SNS Publish Policy
 ###########################
 
@@ -89,3 +117,26 @@ resource "aws_iam_role_policy_attachment" "ecs_dynamodb" {
   role       = aws_iam_role.ecs_task.name
   policy_arn = aws_iam_policy.dynamodb_access.arn
 }
+
+data "aws_iam_policy_document" "kms_dynamodb_access" {
+  statement {
+    actions = [
+      "kms:Encrypt",
+      "kms:Decrypt",
+      "kms:GenerateDataKey"
+    ]
+    resources = [var.table_kms_key_arn]
+    effect    = "Allow"
+  }
+}
+
+resource "aws_iam_policy" "kms_dynamodb_access" {
+  name   = "kms-dynamodb-access"
+  policy = data.aws_iam_policy_document.kms_dynamodb_access.json
+}
+
+resource "aws_iam_role_policy_attachment" "ecs_kms_access" {
+  role       = aws_iam_role.ecs_task.name
+  policy_arn = aws_iam_policy.kms_dynamodb_access.arn
+}
+

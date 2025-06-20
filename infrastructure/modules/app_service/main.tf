@@ -46,6 +46,8 @@ resource "aws_ecs_task_definition" "app" {
       }
     }
   ])
+
+  depends_on = [aws_cloudwatch_log_group.ecs_app]
 }
 
 resource "aws_ecs_service" "app" {
@@ -72,4 +74,13 @@ resource "aws_ecs_service" "app" {
   health_check_grace_period_seconds = 60
 
   depends_on = [aws_ecs_task_definition.app]
+}
+
+resource "aws_cloudwatch_log_group" "ecs_app" {
+  name              = var.log_group_name
+  retention_in_days = 7
+
+  tags = {
+    Name = "ECS App Log Group"
+  }
 }

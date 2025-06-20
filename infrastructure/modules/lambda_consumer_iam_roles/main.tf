@@ -52,3 +52,24 @@ resource "aws_iam_role_policy_attachment" "custom" {
   role       = aws_iam_role.this.name
   policy_arn = each.value
 }
+
+data "aws_iam_policy_document" "lambda_logs" {
+  statement {
+    actions = [
+      "logs:CreateLogGroup",
+      "logs:CreateLogStream",
+      "logs:PutLogEvents"
+    ]
+    resources = ["arn:aws:logs:${var.region}:log-group:/aws/lambda/${var.name}-consumer:*"]
+  }
+}
+
+resource "aws_iam_policy" "lambda_logs" {
+  name   = "${var.name}-lambda-logs"
+  policy = data.aws_iam_policy_document.lambda_logs.json
+}
+
+resource "aws_iam_role_policy_attachment" "lambda_logs" {
+  role       = aws_iam_role.this.name
+  policy_arn = aws_iam_policy.lambda_logs.arn
+}

@@ -12,7 +12,7 @@ def handler(event, context):
             user_id = body["user_id"]
             reservation_id = body["reservation_id"]
 
-            print(f"💳 Processing payment for reservation {reservation_id} by user {user_id}")
+            print(f"Processing payment for reservation {reservation_id} by user {user_id}")
 
             # Example: update 'paid' field to true
             response = table.update_item(
@@ -24,7 +24,7 @@ def handler(event, context):
                 ExpressionAttributeValues={":p": True}
             )
 
-            print(f"✅ Payment marked as complete for {reservation_id}")
+            print(f"Payment marked as complete for {reservation_id}")
 
         except Exception as e:
-            print(f"❌ Error processing payment: {e}")
+            print(f"Error processing payment: {e}")

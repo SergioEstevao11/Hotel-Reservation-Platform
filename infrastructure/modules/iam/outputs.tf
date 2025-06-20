@@ -9,3 +9,7 @@ output "task_role_arn" {
 output "dynamodb_access_policy_arn" {
   value = aws_iam_policy.dynamodb_access.arn
 }
+
+output "kms_dynamodb_access" {
+  value = aws_iam_policy.kms_dynamodb_access.arn
+}

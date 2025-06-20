@@ -20,6 +20,7 @@ module "iam" {
   source                     = "./modules/iam"
   sns_topic_arn              = module.sns.topic_arn
   dynamodb_reservations_arn  = module.dynamodb_reservations.table_arn
+  table_kms_key_arn = module.dynamodb_reservations.table_kms_key_arn
 }
 
 module "ecs_cluster" {
@@ -38,7 +39,7 @@ module "alb" {
 
 module "ecr" {
   source = "./modules/ecr"
-  name   = "hotel-app"
+  name   = "hotel-reservation-platform"
 }
 
 module "app_service" {
@@ -66,7 +67,7 @@ locals {
   queues = {
     payment     = "hotel-payment-queue"
     email       = "hotel-email-queue"
-    updater     = "hotel-update-queue"
+    updater     = "hotel-updater-queue"
     analytics   = "hotel-analytics-queue"
   }
 
@@ -79,11 +80,11 @@ locals {
     payment = {
       handler_file = "payment_handler.handler"
       zip_path     = "../lambdas/payment_handler.zip"
-      policy_arns  = [module.iam.dynamodb_access_policy_arn]
+      policy_arns  = [module.iam.dynamodb_access_policy_arn, module.iam.kms_dynamodb_access]
     }
-    update = {
-      handler_file = "update_handler.handler"
-      zip_path     = "../lambdas/update_handler.zip"
+    updater = {
+      handler_file = "updater_handler.handler"
+      zip_path     = "../lambdas/updater_handler.zip"
       policy_arns  = [module.iam.dynamodb_access_policy_arn]
     }
     analytics = {
@@ -109,6 +110,7 @@ module "lambda_consumer_iam_roles" {
   name               = each.key
   queue_arn          = module.sqs_queues[each.key].queue_arn
   custom_policy_arns = each.value.policy_arns
+  region             = var.region
 }
 
 module "lambda_consumers" {
