@@ -9,6 +9,7 @@ terraform.tfvars
 # Local .env files / credentials
 .env
 .env.*
+*.zip
 
 # === Python app ===
 __pycache__/
