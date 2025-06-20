@@ -83,15 +83,22 @@ The idea of this project was to create a solid, scalable foundation for a reserv
 ---
 ## 🧠 Design Decisions
 
-Fargate for lower overhead, and its serverless container nature, serving as the API host.
+**Fargate** for lower overhead, and its serverless container nature, serving as the API host.
 
-Application Load Balancer (ALB) to serve as the system’s web-facing entry point and balance traffic between tasks across multiple Availability Zones.
+**Application Load Balancer (ALB)** to serve as the system’s web-facing entry point and balance traffic between tasks across multiple Availability Zones.
 
-SNS + SQS (Fan-out architecture) for asynchronous processing and decoupled task execution per endpoint, promoting parallelism, task and error isolation, and better observability
+**SNS + SQS** (Fan-out architecture) for asynchronous processing and decoupled task execution per endpoint, promoting parallelism, task and error isolation, and better observability
 
-DynamoDB for fast, out-of-the-box scalable NoSQL backend.
+Each **Lambda** function represents a well-defined functional domain, useful for separations of privilege, consuming messages from its respective **SQS** queue: (Note - some of them are currently placeholders)
+- **Payment**: Handles transaction processing and potential reimbursements. Has access to the DynamoDB to update reservation status.
+- **Updater**: Intended to manage reservation update events. Has access to the DynamoDB to update reservation status.
+- **Email**: Would notify users about booking confirmations, updates, or issues.
+- **Analytics**: A placeholder for future aggregation of user activity and event data, potentially useful for visualization or ML pipeline integration.
 
-VPC Endpoints to enable secure service access (e.g., ECR, DynamoDB) without public internet exposure.
+
+**DynamoDB** for fast, out-of-the-box scalable NoSQL backend.
+
+**VPC Endpoints** to enable secure service access (e.g., **ECR**, **DynamoDB**) without public internet exposure.
 
 
 ## ⚡️ Features - Endpoints
