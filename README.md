@@ -87,7 +87,7 @@ Fargate for lower overhead, and its serverless container nature, serving as the 
 
 Application Load Balancer (ALB) to serve as the system’s web-facing entry point and balance traffic between tasks across multiple Availability Zones.
 
-SNS + SQS (Fan-out architecture) for asynchronous processing and decoupled task execution per endpoint, promoting parallelism and task isolation.
+SNS + SQS (Fan-out architecture) for asynchronous processing and decoupled task execution per endpoint, promoting parallelism, task and error isolation, and better observability
 
 DynamoDB for fast, out-of-the-box scalable NoSQL backend.
 
