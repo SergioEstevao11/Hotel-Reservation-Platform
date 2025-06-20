@@ -4,7 +4,7 @@ variable "name" {
 }
 
 variable "queue_arn" {
-  description = "SQS queue ARN (optional)"
+  description = "SQS queue ARN"
   type        = string
   default     = null
 }
