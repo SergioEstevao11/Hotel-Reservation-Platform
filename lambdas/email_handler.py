@@ -1,20 +1,38 @@
-import boto3, os, json
-from botocore.exceptions import ClientError
+import os, json, boto3
+from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 dynamodb = boto3.resource("dynamodb")
 ses = boto3.client("ses")
 
 USER_TABLE = dynamodb.Table(os.environ["USER_TABLE_NAME"])
 TEMPLATES_PATH = os.path.join(os.path.dirname(__file__), "templates")
+SOURCE_EMAIL = os.environ["SOURCE_EMAIL"]
 
-def get_email_template(template_name):
+SUBJECT_MAP = {
+    "ReservationCreated": "Your reservation has been created",
+    "ReservationUpdated": "Your reservation has been updated",
+    "ReservationCancelled": "Your reservation has been cancelled"
+}
+
+TEMPLATE_MAP = {
+    "ReservationCreated": "created.html",
+    "ReservationUpdated": "updated.html",
+    "ReservationCancelled": "cancelled.html"
+}
+
+# Jinja2 environment
+jinja_env = Environment(
+    loader=FileSystemLoader(TEMPLATES_PATH),
+    autoescape=select_autoescape(["html"])
+)
+
+def render_template(template_name, context):
     try:
-        template_file = os.path.join(TEMPLATES_PATH, template_name)
-        with open(template_file, "r", encoding="utf-8") as f:
-            return f.read()
+        template = jinja_env.get_template(template_name)
+        return template.render(**context)
     except Exception as e:
-        print(f"Failed to load local email template '{template_name}': {e}")
-        return "<p>Template error</p>"
+        print(f"Failed to render template {template_name}: {e}")
+        return "<p>Error rendering template</p>"
 
 def get_user_email(user_id):
     try:
@@ -27,7 +45,7 @@ def get_user_email(user_id):
 def send_email(to_address, subject, html_body):
     try:
         ses.send_email(
-            Source=os.environ["SES_SENDER"],
+            Source=SOURCE_EMAIL,
             Destination={"ToAddresses": [to_address]},
             Message={
                 "Subject": {"Data": subject},
@@ -35,39 +53,30 @@ def send_email(to_address, subject, html_body):
             }
         )
         print(f"Email sent to {to_address}")
-    except ClientError as e:
-        print(f"Failed to send email: {e.response['Error']['Message']}")
+    except Exception as e:
+        print(f"Failed to send email: {e}")
 
 def handler(event, context):
-    print("Email Handler Triggered")
     for record in event.get("Records", []):
         try:
             body = json.loads(record["body"])
             event_type = body.get("eventType")
             user_id = body.get("user_id")
 
-            print(f"Processing event {event_type} for user {user_id}")
+            if event_type not in TEMPLATE_MAP:
+                print(f"Unknown eventType: {event_type}")
+                continue
 
             user_email = get_user_email(user_id)
             if not user_email:
-                print(f"No email found for user {user_id}, skipping.")
+                print(f"No email for user {user_id}")
                 continue
 
-            if event_type == "ReservationCreated":
-                subject = "Your reservation has been created"
-                template_name = "created.html"
-            elif event_type == "ReservationUpdated":
-                subject = "Your reservation has been updated"
-                template_name = "updated.html"
-            elif event_type == "ReservationCancelled":
-                subject = "Your reservation has been cancelled"
-                template_name = "cancelled.html"
-            else:
-                print(f"Unknown event type: {event_type}")
-                continue
+            subject = SUBJECT_MAP[event_type]
+            template_name = TEMPLATES_PATH[event_type]
+            html_body = render_template(template_name, context=body)
 
-            html_template = get_email_template(template_name)
-            send_email(user_email, subject, html_template)
+            send_email(user_email, subject, html_body)
 
         except Exception as e:
-            print(f"Error processing record: {e}")
+            print(f"Error processing event: {e}")

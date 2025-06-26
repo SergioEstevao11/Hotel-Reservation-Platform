@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en">
+  <body>
+    <h2>Reservation Cancelled</h2>
+    <p>Hello {{ user_id }},</p>
+    <p>Your reservation at <strong>{{ hotel_name }}</strong> has been cancelled.</p>
+
+    <p>
+      <strong>Reservation ID:</strong> {{ reservation_id }}<br>
+      <strong>Originally Scheduled From:</strong> {{ check_in }} to {{ check_out }}<br>
+      <strong>Status:</strong> {{ status }}
+    </p>
+
+    <p>We're sorry to see you go. Let us know if we can help in the future.</p>
+  </body>
+</html>
