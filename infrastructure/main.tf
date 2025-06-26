@@ -71,6 +71,13 @@ locals {
     analytics   = "hotel-analytics-queue"
   }
 
+  event_filter_policy = {
+    payment = ["ReservationCreated", "ReservationUpdated", "ReservationCancelled"]
+    email   = ["ReservationCreated", "ReservationUpdated", "ReservationCancelled"]
+    updater = ["ReservationUpdated", "ReservationCancelled"]
+    analytics = ["ReservationCreated", "ReservationUpdated", "ReservationCancelled"]
+  }
+
   lambda_consumers = {
     email = {
       handler_file = "email_handler.handler"
@@ -101,6 +108,7 @@ module "sqs_queues" {
 
   queue_name = each.value
   topic_arn  = module.sns.topic_arn
+  event_triggers = local.event_filter_policy[each.key]
 }
 
 module "lambda_consumer_iam_roles" {

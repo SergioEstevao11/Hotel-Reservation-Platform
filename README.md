@@ -89,7 +89,7 @@ The idea of this project was to create a solid, scalable foundation for a reserv
 
 **SNS + SQS** (Fan-out architecture) for asynchronous processing and decoupled task execution per endpoint, promoting parallelism, task and error isolation, and better observability
 
-Each **Lambda** function represents a well-defined functional domain, useful for separations of privilege, consuming messages from its respective **SQS** queue: (Note - some of them are currently placeholders)
+While Fargate executes the synchronous tasks, the rest of the async works is done using Lambda. Each **Lambda** function represents a well-defined functional domain, useful for separations of privilege, consuming messages from its respective **SQS** queue: (Note - some of them are currently placeholders)
 - **Payment**: Handles transaction processing and potential reimbursements. Has access to the DynamoDB to update reservation status.
 - **Updater**: Intended to manage reservation update events. Has access to the DynamoDB to update reservation status.
 - **Email**: Would notify users about booking confirmations, updates, or issues.
