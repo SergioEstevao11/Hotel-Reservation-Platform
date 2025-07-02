@@ -81,22 +81,22 @@ locals {
   lambda_consumers = {
     email = {
       handler_file = "email_handler.handler"
-      zip_path     = "../lambdas/email_handler.zip"
+      zip_path     = "../lambdas/email/email_handler.zip"
       policy_arns  = []
     }
     payment = {
       handler_file = "payment_handler.handler"
-      zip_path     = "../lambdas/payment_handler.zip"
+      zip_path     = "../lambdas/payment/payment_handler.zip"
       policy_arns  = [module.iam.dynamodb_access_policy_arn, module.iam.kms_dynamodb_access]
     }
     updater = {
       handler_file = "updater_handler.handler"
-      zip_path     = "../lambdas/updater_handler.zip"
+      zip_path     = "../lambdas/updater/updater_handler.zip"
       policy_arns  = [module.iam.dynamodb_access_policy_arn]
     }
     analytics = {
       handler_file = "analytics_handler.handler"
-      zip_path     = "../lambdas/analytics_handler.zip"
+      zip_path     = "../lambdas/analytics/analytics_handler.zip"
       policy_arns  = []
     }
   }
