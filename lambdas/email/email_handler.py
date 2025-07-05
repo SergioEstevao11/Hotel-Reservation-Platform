@@ -1,10 +1,8 @@
 import os, json, boto3
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
-dynamodb = boto3.resource("dynamodb")
 ses = boto3.client("ses")
 
-USER_TABLE = dynamodb.Table(os.environ["USER_TABLE_NAME"])
 TEMPLATES_PATH = os.path.join(os.path.dirname(__file__), "templates")
 SOURCE_EMAIL = os.environ["SOURCE_EMAIL"]
 
@@ -34,13 +32,6 @@ def render_template(template_name, context):
         print(f"Failed to render template {template_name}: {e}")
         return "<p>Error rendering template</p>"
 
-def get_user_email(user_id):
-    try:
-        response = USER_TABLE.get_item(Key={"user_id": user_id})
-        return response["Item"]["email"]
-    except Exception as e:
-        print(f"Could not get user email: {e}")
-        return None
 
 def send_email(to_address, subject, html_body):
     try:
@@ -61,15 +52,10 @@ def handler(event, context):
         try:
             body = json.loads(record["body"])
             event_type = body.get("eventType")
-            user_id = body.get("user_id")
+            user_email = body.get("client_email")
 
             if event_type not in TEMPLATE_MAP:
                 print(f"Unknown eventType: {event_type}")
-                continue
-
-            user_email = get_user_email(user_id)
-            if not user_email:
-                print(f"No email for user {user_id}")
                 continue
 
             subject = SUBJECT_MAP[event_type]

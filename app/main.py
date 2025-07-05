@@ -29,7 +29,8 @@ async def reserve(req: Request):
     body = await req.json()
     reservation_id = str(uuid4())
     item = {
-        "user_id": body["user_id"],
+        "client_name": body["client_name"],
+        "client_email": body["client_email"],
         "reservation_id": reservation_id,
         "hotel_name": body["hotel"],
         "check_in": body["check_in"],
@@ -47,7 +48,6 @@ async def update_reservation(reservation_id: str, req: Request):
     try:
         table.update_item(
             Key={
-                "user_id": body["user_id"],
                 "reservation_id": reservation_id
             },
             UpdateExpression="SET check_in = :ci, check_out = :co, hotel_name = :hn, status = :st",
@@ -61,7 +61,8 @@ async def update_reservation(reservation_id: str, req: Request):
         )
 
         item = {
-            "user_id": body["user_id"],
+            "client_name": body["client_name"],
+            "client_email": body["client_email"],
             "reservation_id": reservation_id,
             "check_in": body["check_in"],
             "check_out": body["check_out"],
@@ -80,7 +81,6 @@ async def cancel_reservation(reservation_id: str, req: Request):
     try:
         table.update_item(
             Key={
-                "user_id": body["user_id"],
                 "reservation_id": reservation_id
             },
             UpdateExpression="SET status = :st",
@@ -89,8 +89,12 @@ async def cancel_reservation(reservation_id: str, req: Request):
         )
 
         item = {
-            "user_id": body["user_id"],
+            "client_name": body["client_name"],
+            "client_email": body["client_email"],
             "reservation_id": reservation_id,
+            "check_in": body["check_in"],
+            "check_out": body["check_out"],
+            "hotel_name": body["hotel"],
             "status": "cancelled"
         }
         publish_event(item, "ReservationCancelled")

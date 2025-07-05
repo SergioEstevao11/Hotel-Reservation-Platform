@@ -111,8 +111,9 @@ Command to test:
 curl -X POST http://<alb-arn>.<region>.elb.amazonaws.com/reserve \
   -H "Content-Type: application/json" \
   -d '{
-    "user_id": "Lucio",
-    "hotel": "Falkensteiner",
+    "client_name": "M. Gustave",
+    "client_email": "example@gmail.com
+    "hotel": "Grand Budapest Hotel",
     "check_in": "2025-07-01",
     "check_out": "2025-07-05"
   }'
@@ -133,3 +134,4 @@ curl -X POST http://<alb-arn>.<region>.elb.amazonaws.com/reserve \
 - Migrate **DynamoDB** to **RDS/Aurora** for more relational consistency and complex querying
 - Replace payment **Lambda** with a **Step Function** to support longer-lived workflows
 - **S3** + **Athena** for data analytics
+- 
