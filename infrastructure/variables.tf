@@ -1,5 +1,14 @@
 variable "region" {
-  description = "AWS region to deploy to"
+  description = "AWS Region"
   type        = string
-  default     = "eu-west-1"
+}
+
+variable "cidr_block" {
+  description = "CIDR block for the VPC"
+  type        = string
+}
+
+variable "availability_zones" {
+  description = "Availability zones to use"
+  type        = list(string)
 }

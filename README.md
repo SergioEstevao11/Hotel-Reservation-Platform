@@ -37,34 +37,32 @@ Make sure the following tools are installed and configured:
 1. Clone the Repository
 ```bash
 git clone
-cd ./infrastructure
 ```
 
-2. Initialize Terraform
+2. Generate the lambda zip files
 ```bash
+./scripts/zip_lambdas.sh
+```
+3. Initialize Terraform
+```bash
+cd infrastructure
 terraform init
 ```
-3. Preview Plan
+4. Preview Plan
 ```bash
 terraform plan
 ```
-4.  *🔐 Task Image ECR Setup (First-Time Users)*
-- **Create an ECR Repository** (or use Terraform for this)
-    ```bash
-    terraform apply -target=module.ecr
-    ```
-- Execute the deploy_ecr.sh script to publish the image
-    ```bash
-    ./scripts/deploy_ecr.sh
-    ```
-- Generate the lambda zip files
-    ```bash
-    ./scripts/zip_lambdas.sh
-    ```
 5. Initiate the project
 ```bash
 terraform apply
 ```
+6. Push the app docker image to ECR (configure the variables inside of the file)
+```bash
+cd ..
+./scripts/build_docker_app_ecr.sh
+```
+
+
 
 ---
 ## ⚙️ Variables

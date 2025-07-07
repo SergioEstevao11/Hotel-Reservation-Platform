@@ -1,8 +1,8 @@
 module "vpc" {
   source = "./modules/vpc"
 
-  cidr_block           = "10.0.0.0/16"
-  availability_zones   = ["eu-west-1a", "eu-west-1b"]
+  cidr_block           = var.cidr_block
+  availability_zones   = var.availability_zones
   region               = var.region
 }
 
