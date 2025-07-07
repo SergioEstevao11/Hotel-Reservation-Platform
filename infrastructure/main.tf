@@ -21,6 +21,8 @@ module "iam" {
   sns_topic_arn              = module.sns.topic_arn
   dynamodb_reservations_arn  = module.dynamodb_reservations.table_arn
   table_kms_key_arn = module.dynamodb_reservations.table_kms_key_arn
+  region = var.region
+  account_id = var.account_id
 }
 
 module "ecs_cluster" {

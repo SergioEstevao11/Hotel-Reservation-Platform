@@ -50,11 +50,9 @@ data "aws_iam_policy_document" "s3_read_access" {
   statement {
     actions = [
       "s3:GetObject",
-      "s3:ListBucket"
     ]
     resources = [
-      "arn:aws:s3:::*",
-      "arn:aws:s3:::*/*"
+      "arn:aws:s3:::prod-region-starport-layer-bucket/*"
     ]
     effect = "Allow"
   }
@@ -65,10 +63,10 @@ resource "aws_iam_policy" "s3_read_access" {
   policy = data.aws_iam_policy_document.s3_read_access.json
 }
 
-resource "aws_iam_role_policy_attachment" "execution_attach_s3_read" {
-  role       = aws_iam_role.ecs_execution.name
-  policy_arn = aws_iam_policy.s3_read_access.arn
-}
+#resource "aws_iam_role_policy_attachment" "execution_attach_s3_read" {
+#  role       = aws_iam_role.ecs_execution.name
+#  policy_arn = aws_iam_policy.s3_read_access.arn
+#}
 
 ###########################
 # SNS Publish Policy

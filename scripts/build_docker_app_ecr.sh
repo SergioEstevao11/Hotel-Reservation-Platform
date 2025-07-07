@@ -1,20 +1,24 @@
 #!/bin/bash
 
-set -euo pipefail
+set -e
 
-# editable parameters
-export AWS_REGION=eu-west-1
-export AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
-export ECR_REPO_NAME=hotel-reservation-platform
-export ECR_URI="${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com"
-export BUILD_PATH="$(pwd)/app"
+#editable parameters
+REGION="eu-west-1"
+ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
+REPO_NAME="hotel-reservation-platform"
+IMAGE_TAG="latest"
+PLATFORM="linux/amd64"
 
+aws ecr get-login-password --region $REGION | docker login --username AWS --password-stdin "$ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com"
 
-aws ecr get-login-password | \
-  docker login --username AWS --password-stdin "${ECR_URI}"
+docker buildx build \
+  --platform "$PLATFORM" \
+  -t "${REPO_NAME}:${IMAGE_TAG}" \
+  -f ./app/Dockerfile app/ \
+  --load
 
-docker build -t "${ECR_REPO_NAME}:latest" "$BUILD_PATH"
-docker tag "${ECR_REPO_NAME}:latest" "${ECR_URI}/${ECR_REPO_NAME}:latest"
-docker push "${ECR_URI}/${ECR_REPO_NAME}:latest"
+ECR_URI="${ACCOUNT_ID}.dkr.ecr.${REGION}.amazonaws.com/${REPO_NAME}:${IMAGE_TAG}"
+docker tag "${REPO_NAME}:${IMAGE_TAG}" "${ECR_URI}"
+docker push "${ECR_URI}"
 
-echo "Image successfully pushed to: ${ECR_URI}/${ECR_REPO_NAME}:latest"
+echo "Successfully pushed image to ECR: ${ECR_URI}"
